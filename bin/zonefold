@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# zonefold - Fold DNS RR data at given width
+# Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
+# Released under the terms of the "MIT" license
+
+PROGRAM="${0##*/}"
+VERSION='0.0.1'
+RELEASE='2023061401'
+AUTHORS='2023 Matous Jan Fialka, <https://mjf.cz/>'
+LICENSE='MIT'
+
+alias error='1>&2 echo ${0##*/}:'
+alias quiet='2>/dev/null'
+
+if [ $# -gt 2 ]; then
+	error 'pass width or width and file name'
+	exit 1
+fi
+
+quiet fold -s -w ${1:-255} $2 |
+sed '1{s/^/(\n  "/;s/$/"/};2,${s/^/  "/;s/$/"/};$ s/$/ )\n/'
+
+# vi:ft=sh
