@@ -41,6 +41,6 @@ echo -n -e "$2._domainkey IN TXT \"v=DKIM1; k=$1; p=\" "
 
 quiet openssl "$1" -in "$3" -pubout |
 sed '1d; $d' |
-zonefold 64
+zfold 64
 
 # vi:ft=sh

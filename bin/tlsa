@@ -120,6 +120,6 @@ case $matching in
 esac |
 
 tr a-z A-Z |
-zonefold 64
+zfold 64
 
 # vi:ft=sh

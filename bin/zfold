@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# zonefold - Fold DNS RR data at given width
+# zfold - Fold DNS RR data at given width
 # Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
 # Released under the terms of the "MIT" license
 
