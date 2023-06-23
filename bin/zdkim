@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# dkim - Simple script to generate DKIM records
+# zdkim - Simple script to generate DKIM records
 # Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
 # Released under the terms of the "MIT" license
 
