@@ -1,0 +1,37 @@
+#! /bin/sh
+
+# z - Dig wrapper
+# Copyright (C) 2014, 2023 Matous J. Fialka, <http://mjf.cz/>
+# Released under the terms of The MIT License
+
+PROGRAM="${0##*/}"
+VERSION='0.2.1'
+AUTHORS='2014, 2023 Matouš Jan Fialka, <https://mjf.cz/>'
+LICENSE='MIT'
+
+if ! DIG=$(which dig); then
+	echo "$PROGRAM: dig(1) or kdig(1) cannot be found." 1>&2
+	exit 1
+fi
+
+DIG_OPTS=(
+	+trace
+	+noall
+	+nocmd
+	+noadditional
+	+noidentify
+	+nocomments
+	+answer
+)
+OPTS=(${@:-.})
+
+$DIG 2>/dev/null ${ARGUMENTS[@]} ${DIG_OPTS[@]} ${OPTS[@]} +nomultiline|
+while read NAME REST; do
+	case $NAME in
+	${OPTS[$((${#OPTS[@]}-1))]}|${OPTS[$((${#OPTS[@]}-1))]}.|*.in-addr.arpa.)
+		echo $NAME $REST
+		;;
+	esac
+done
+
+# vi:ft=sh:nowrap:
