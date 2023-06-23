@@ -6,11 +6,10 @@ It's dependency is the `zht` utility that reformats time values to
 human-readablel form. The petite `z` utility is just wrapper around
 the `dig(1)` tool.
 
-The utility named `zonefold` can fold long DNS records and is
-prerequisity for the other utilities.
-
-Most of the other utilities are primarily dedicated to the generation of
-DNS records, notably TLSA (`tlsa`) and DKIM (`dkim`).
+The utility named `zfold` can fold long DNS records and is prerequisity
+for some other utilities. Most of the other utilities are primarily
+dedicated to the generation of DNS records, notably TLSA (`tlsa`) and
+DKIM (`dkim`).
 
 The essential requirements for all the utilities include standard Unix
 tools such as `sed`, `awk`, and `grep`, in addition to OpenSSL.
