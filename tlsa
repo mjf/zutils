@@ -1,0 +1,125 @@
+#! /bin/sh
+
+# tlsa - Simple script to generate TLSA records
+# Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
+# Released under the terms of the "MIT" license
+
+# Example: tlsa 3 1 1 /path/to/certificate.pem https
+# Note: If service is not found using getent(1) then it is passed as given.
+# Warning: Only the most basic checking is performed.
+
+alias error='1>&2 echo ${0##*/}:'
+alias quiet='2>/dev/null'
+
+if [ $# -ne 5 ]; then
+	error 'pass first three TLSA fields, certificate path and service name'
+	exit 1
+fi
+
+case "$1" in
+	0 | pkix-ta)
+		usage=0
+		;;
+	1 | pkix-ee)
+		usage=1
+		;;
+	2 | dane-ta)
+		usage=2
+		;;
+	3 | dane-ee)
+		usage=3
+		;;
+	\? | help)
+		cat <<- EOT
+		0 | pkix-ta
+		1 | pkix-ee
+		2 | dane-ta
+		3 | dane-ee
+		EOT
+		exit 0
+		;;
+	*)
+		error 'TLSA usage field not recognized, try "?" instead'
+		exit 128
+esac
+
+case "$2" in
+	0 | full-certificate | full-cert | certificate | cert | full)
+		selector=0
+		;;
+	1 | subject-public-key | spki)
+		selector=1
+		;;
+	\? | help)
+		cat <<- EOT
+		0 | full-certificate | full-cert | certificate | cert | full
+		1 | subject-public-key | spki
+		EOT
+		exit 0
+		;;
+	*)
+		error 'TLSA selector field not recognized, try "?" instead'
+		exit 129
+esac
+
+case "$3" in
+	0 | exact-match | exact | match)
+		matching=0
+		;;
+	1 | sha-256-digest | sha256-digest | sha-256 | sha256)
+		matching=1
+		;;
+	2 | sha-512-digest | sha512-digest | sha-512 | sha512)
+		matching=2
+		;;
+	\? | help)
+		cat <<- EOT
+		0 | exact-match | exact | match
+		1 | sha-256-digest | sha256-digest | sha-256 | sha256
+		2 | sha-512-digest | sha512-digest | sha-512 | sha512
+		EOT
+		exit 0
+		;;
+	*)
+		error 'TLSA matching field not recognized, try "?" instead'
+		exit 130
+esac
+
+if ! [ -f "$4" -a -r "$4" ]; then
+	error 'certificate file could not be read'
+	exit 131
+fi
+
+service=$(
+	quiet getent services "$(tr A-Z a-z <<< "$5")" |
+	sed 's/^[^ \t]\+[ \t]\+//;s/^/_/;s|/|._|'
+)
+
+echo -n -e "${service:-$5} IN TLSA $usage $selector $matching "
+
+quiet openssl x509 -in "$4" |
+
+case $selector in
+	0)
+		quiet openssl x509 -outform DER
+		;;
+	1)
+		quiet openssl x509 -noout -pubkey |
+		quiet openssl rsa -pubin -outform DER
+esac |
+
+case $matching in
+	0)
+		hexdump -ve '/1 "%02x"'
+		;;
+	1)
+		quiet openssl sha256 -r |cut -d ' ' -f 1
+		;;
+	2)
+		quiet openssl sha512 -r |cut -d ' ' -f 1
+esac |
+
+tr a-z A-Z |
+zonefold 64
+
+# vi:ft=sh

@@ -1,0 +1,46 @@
+#! /bin/sh
+
+# dkim - Simple script to generate DKIM records
+# Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
+# Released under the terms of the "MIT" license
+
+# Example: dkim rsa mx-2023060701 /path/to/private-key.pem
+# Warning: Only the most basic checking is performed.
+
+alias error='1>&2 echo ${0##*/}:'
+alias quiet='2>/dev/null'
+
+if [ $# -ne 3 ]; then
+	error 'pass private key (PK) kind, DKIM selector and path to PK'
+	exit 1
+fi
+
+case "$1" in
+	rsa)
+		;;
+	\? | help)
+		echo 'rsa'
+		exit 0
+		;;
+	*)
+		error 'DKIM private key kind not recognized, try "?" instead'
+		exit 128
+esac
+
+if ! grep -q -E '^[a-z0-9][a-z0-9_-]+$' <<< "$2"; then
+	error 'DKIM selector must match /^[a-z0-9][a-z0-9_-]+$/'
+	exit 129
+fi
+
+if ! [ -f "$3" -a -r "$3" ]; then
+	error 'private key file could not be read'
+	exit 130
+fi
+
+echo -n -e "$2._domainkey IN TXT \"v=DKIM1; k=$1; p=\" "
+
+quiet openssl "$1" -in "$3" -pubout |
+sed '1d; $d' |
+zonefold 64
+
+# vi:ft=sh

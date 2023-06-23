@@ -1,0 +1,294 @@
+#! /bin/sh
+
+# zf - Zone Filter (aka DigDig)
+# Copyright (C) 2014, 2022-2023 Matous J. Fialka, <http://mjf.cz/>
+# Released under the terms of The MIT License
+
+PROGRAM="${0##*/}"
+VERSION='1.8'
+AUTHORS=('2014, 2022-2023 Matouš Jan Fialka, <https://mjf.cz/>')
+LICENSE='MIT'
+
+WITH_DNSSEC=0
+REFORMAT=0
+REFORMAT_SOA=0
+UNIQUE=0
+FIELDS=(0 0 0 0)
+for FIELD in {0..99}; do
+	VALUE_FIELDS[$FIELD]=0
+done
+unset FIELD
+while [ $# -gt 0 ]; do
+	case $1 in
+	-h|-help)
+		sed /^TODO/d <<- EOT
+		Usage: $PROGRAM { [-hV] | [-CDOSTu] [+<rr-opt> ...] }
+
+		Where:
+		   -C, -complement	Print fields' complement (0=>1, 1=>0)
+		   -D, -with-dnssec	Print DNSKEY, RRSIG, NSEC and DS
+		   -S, -reformat-soa	Print reformated SOA values
+		 			* Print reformated SOA e-mail in form
+		   			  of normal e-mail address formatting
+		 			* Print reformated SOA serial in form
+		   			  of YYYY-MM-DD.RR where YYYY = year,
+		   			  MM = month, DD = day, RR = revision
+		    			* Print reformated SOA timings in the
+		   			  form shown in -T
+		   -T, -reformat-ttl	Print reformated TTL values in form
+		      			of CWCDCHCMCS where W = weeks, D = days
+		   			H = hours, M = minutes, S = seconds,
+		   			C = count of any of W, D, H, M and S
+		   -u, -uniq, -unique   Print unique lines only (postprocess)
+		   -V, -version		Print version information
+		   -h, -help, -usage	Print this help screen
+
+		Where +<rr-opt>:
+		   +[no]all		[Do not] Print all fields
+		   +[no]n[ame]		[Do not] Print name field
+		   +[no]t{t[l]|[t]l}	[Do not] Print TTL field
+		   +[no]c[lass]		[Do not] Print class field
+		   +[no]t[ype]		[Do not] Print type field
+		   +[no]v[alue][1-100]	[Do not] Print value field(s)
+		   +q[uick]		Alias for +ttl +type +value
+
+		Examples:
+		   z soa example.com |$PROGRAM -C +name +ttl
+		   z soa example.com |$PROGRAM -C +noname +notype
+		   z any example.com |$PROGRAM +name +type +value1 +value2
+		   z mx  example.com |$PROGRAM +quick +novalue1 -S
+		EOT
+		exit 0
+		;;
+	-C|-complement)
+		for FIELD in {0..3}; do
+			if [ ${FIELDS[$FIELD]} -eq 1 ]; then
+				FIELDS[$FIELD]=0
+			else
+				FIELDS[$FIELD]=1
+			fi
+		done
+		for FIELD in {0..99}; do
+			if [ ${VALUE_FIELDS[$FIELD]} -eq 1 ]; then
+				VALUE_FIELDS[$FIELD]=0
+			else
+				VALUE_FIELDS[$FIELD]=1
+			fi
+		done
+		unset FIELD
+		;;
+	-D|-with-dnssec)
+		WITH_DNSSEC=1
+		;;
+	-S|-reformat-soa)
+		REFORMAT_SOA=1
+		;;
+	-T|-reformat-ttl)
+		REFORMAT=1
+		;;
+	-u|-uniq|-unique)
+		UNIQUE=1
+		;;
+	-V|-version)
+		cat <<- EOT
+		$PROGRAM (Zone Fields), version $VERSION.
+		$(for AUTHOR in "${AUTHORS[@]}"; do
+			cat <<- EOSUBT
+			Copyright (C) $AUTHOR
+			EOSUBT
+		done)
+		Released under the terms of The MIT License
+		EOT
+
+		exit 0
+		;;
+	+a|+al|+all)
+		FIELDS=(1 1 1 1)
+
+		for FIELD in {0..99}; do
+			VALUE_FIELDS[$FIELD]=1
+		done
+		unset FIELD
+		;;
+	+noa|+noal|+noall)
+		FIELDS=(0 0 0 0)
+		for FIELD in {0..99}; do
+			VALUE_FIELDS[$FIELD]=0
+		done
+		unset FIELD
+		;;
+	+n|+na|+nam|+name)
+		FIELDS[0]=1
+		;;
+	+non|+nona|+nonam|+noname)
+		FIELDS[0]=0
+		;;
+	+tt|+tl|+ttl)
+		FIELDS[1]=1
+		;;
+	+nott|+notl|+nottl)
+		FIELDS[1]=0
+		;;
+	+c|+cl|+cla|+clas|+class)
+		FIELDS[2]=1
+		;;
+	+noc|+nocl|+nocla|+noclas|+noclass)
+		FIELDS[2]=0
+		;;
+	+t|+ty|+typ|+type)
+		FIELDS[3]=1
+		;;
+	+not|+noty|+notyp|+notype)
+		FIELDS[3]=0
+		;;
+	+v|+va|+val|+valu|+value)
+		for FIELD in {0..99}; do
+			VALUE_FIELDS[$FIELD]=1
+		done
+		unset FIELD
+		;;
+	+nov|+nova|+noval|+novalu|+novalue)
+		for FIELD in {0..99}; do
+			VALUE_FIELDS[$FIELD]=0
+		done
+		unset FIELD
+		;;
+	+v[0-9]*|+va[0-9]*|+val[0-9]*|+valu[0-9]*|+value[0-9]*)
+		FIELD=$1
+		FIELD=${FIELD#+value}
+		FIELD=${FIELD#+valu}
+		FIELD=${FIELD#+val}
+		FIELD=${FIELD#+va}
+		FIELD=${FIELD#+v}
+		case $FIELD in
+		[1-9]|[1-9][0-9]|100)
+			VALUE_FIELDS[$((FIELD-1))]=1
+			;;
+
+		*)
+			echo Invalid value field option $1. 1>&2
+			exit 1
+			;;
+		esac
+		unset FIELD
+		;;
+	+nov[0-9]*|+nova[0-9]*|+noval[0-9]*|+novalu[0-9]*|+novalue[0-9]*)
+		FIELD=$1
+		FIELD=${FIELD#+novalue}
+		FIELD=${FIELD#+novalu}
+		FIELD=${FIELD#+noval}
+		FIELD=${FIELD#+nova}
+		FIELD=${FIELD#+nov}
+		case $FIELD in
+		[1-9]|[1-9][0-9]|100)
+			VALUE_FIELDS[$((FIELD-1))]=0
+			;;
+
+		*)
+			echo Invalid value field option $1. 1>&2
+			exit 1
+			;;
+		esac
+		unset FIELD
+		;;
+	+q|+qu|+qui|+quic|+quick)
+		FIELDS[1]=1
+		FIELDS[3]=1
+
+		for FIELD in {0..99}; do
+			VALUE_FIELDS[$FIELD]=1
+		done
+		unset FIELD
+		;;
+	*)
+		echo Unknown option $1. 1>&2
+		exit 1
+		;;
+	esac
+	if [ $# -gt 0 ]; then
+		shift
+	else
+		break
+	fi
+done
+
+while read VALUES[0] VALUES[1] VALUES[2] VALUES[3] VALUES[4]; do
+	if [ -z ${VALUES[0]} ]; then
+		continue
+	fi
+	if [ $WITH_DNSSEC -eq 0 ]; then
+		case ${VALUES[3]} in
+		DNSKEY|RRSIG|NSEC|DS)
+			continue
+			;;
+		esac
+	fi
+	if [ $REFORMAT_SOA -eq 1 ]; then
+		case ${VALUES[3]} in
+		SOA)
+			VALUES[4]=$(
+				FIELD=0
+				for VALUE in ${VALUES[4]}; do
+					case $FIELD in
+					0)
+						;;
+					1)
+						VALUE=${VALUE/./@}
+						VALUE=${VALUE%.}
+						echo -n ' '
+						;;
+					2)
+						if [ ${#VALUE} -eq 10 ]; then
+							VALUE=${VALUE:0:4}-${VALUE:4:2}-${VALUE:6:2}\#$(printf %d ${VALUE:8:2})
+						fi
+						echo -n ' '
+						;;
+					*)
+						VALUE=$(zht $VALUE)
+						echo -n ' '
+						;;
+					esac
+					echo -n $VALUE
+					FIELD=$((FIELD+1))
+				done
+			)
+			;;
+		esac
+	fi
+	OUTPUT=$(
+		case ${VALUES[0]} in
+		\;*)
+			exit 0
+			;;
+		esac
+		for FIELD in {0..3}; do
+			if [ ${FIELDS[$FIELD]} -eq 1 ]; then
+				if [ $FIELD -eq 1 -a $REFORMAT -eq 1 ]; then
+					echo -n $(zht ${VALUES[$FIELD]})
+				else
+					echo -n ${VALUES[$FIELD]}
+				fi
+				echo -n ' '
+			fi
+		done
+		FIELD=0
+		for VALUE_FIELD in ${VALUES[4]}; do
+			if [ ${VALUE_FIELDS[$FIELD]} -eq 1 ]; then
+				echo -n $VALUE_FIELD ''
+			fi
+
+			FIELD=$((FIELD+1))
+		done
+		unset FIELD
+	)
+	if [ ${#OUTPUT} -gt 0 ]; then
+		echo $OUTPUT
+	fi
+done|
+if [ $UNIQUE -eq 1 ]; then
+	sort -u
+else
+	cat
+fi
+
+# vi:ft=sh
