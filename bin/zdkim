@@ -41,7 +41,26 @@ fi
 echo -n -e "$2._domainkey IN TXT \"v=DKIM1; k=$1; p=\" "
 
 quiet openssl pkey -in "$3" -pubout -outform DER |
-base64 -w 0 |
+
+case "$1" in
+	ed25519)
+		# With Ed25519 there are no settings, so there is no need
+		# for an ASN.1 structure.  When using Ed25519 the p value
+		# in the DKIM DNS record must only contain the BASE64
+		# encoded public key, without an ASN.1 structure.
+
+		quiet openssl asn1parse -inform DER -offset 12 -noout -out - |
+		quiet openssl base64
+		;;
+	rsa)
+		# With RSA, the p value of the DKIM DNS record is expected
+		# to contain an ASN.1 structure with the RSA public key.
+		# This is needed because RSA keys can have properties such
+		# as the key size and the exponent.
+
+		quiet openssl base64
+esac |
+
 zfold 64
 
 # vi:ft=sh
