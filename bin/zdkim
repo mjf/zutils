@@ -16,9 +16,10 @@ if [ $# -ne 3 ]; then
 fi
 
 case "$1" in
-	rsa)
+	rsa | ed25519)
 		;;
 	\? | help)
+		echo 'ed25519'
 		echo 'rsa'
 		exit 0
 		;;
@@ -39,8 +40,8 @@ fi
 
 echo -n -e "$2._domainkey IN TXT \"v=DKIM1; k=$1; p=\" "
 
-quiet openssl "$1" -in "$3" -pubout |
-sed '1d; $d' |
+quiet openssl pkey -in "$3" -pubout -outform DER |
+base64 -w 0 |
 zfold 64
 
 # vi:ft=sh
