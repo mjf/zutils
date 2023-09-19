@@ -11,8 +11,8 @@
 alias error='1>&2 echo ${0##*/}:'
 alias quiet='2>/dev/null'
 
-if [ $# -ne 5 ]; then
-	error 'pass first three TLSA fields, certificate path and service name'
+if [ $# -lt 5 -o $# -gt 6 ]; then
+	error 'pass first three TLSA fields, certificate path and service name (and optional resource record chunk length)'
 	exit 1
 fi
 
@@ -120,6 +120,6 @@ case $matching in
 esac |
 
 tr a-z A-Z |
-zfold 64
+zfold ${6:-64}
 
 # vi:ft=sh
