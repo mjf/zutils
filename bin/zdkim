@@ -4,7 +4,7 @@
 # Copyright (C) 2023 Matous Jan Fialka, <https://mjf.cz/>
 # Released under the terms of the "MIT" license
 
-# Example: dkim rsa mx-2023060701 /path/to/private-key.pem
+# Example: zdkim rsa mx-2023060701 /path/to/private-key.pem
 # Warning: Only the most basic checking is performed.
 
 alias error='1>&2 echo ${0##*/}:'
