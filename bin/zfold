@@ -13,12 +13,29 @@ LICENSE='MIT'
 alias error='1>&2 echo ${0##*/}:'
 alias quiet='2>/dev/null'
 
-if [ $# -gt 2 ]; then
-	error 'pass width or width and file name'
+if [ $# -gt 3 ]; then
+	error 'pass width or width and file name (or "-") and "quote"'
 	exit 1
 fi
 
-quiet fold -s -w ${1:-255} $2 |
-sed '1{s/^/(\n  "/;s/$/"/};2,${s/^/  "/;s/$/"/};$ s/$/ )/'
+if [ "$3" = 'quote' ]; then
+	q='"'
+fi
+
+quiet fold -s -w ${1:-255} ${2:--} |
+
+sed '{
+	1 {
+		s/^/(\n  '$q'/
+		s/$/'$q'/
+	}
+	2, $ {
+		s/^/  '$q'/
+		s/$/'$q'/
+	}
+	$ {
+		s/$/ )/
+	}
+}'
 
 # vi:ft=sh
