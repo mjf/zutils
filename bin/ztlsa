@@ -119,7 +119,6 @@ case $matching in
 		quiet openssl sha512 -r |cut -d ' ' -f 1
 esac |
 
-tr a-z A-Z |
-zfold ${6:-64}
+tr a-z A-Z
 
 # vi:ft=sh

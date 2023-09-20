@@ -61,6 +61,6 @@ case "$1" in
 		quiet openssl base64
 esac |
 
-zfold 64 - quote
+zfold 64
 
 # vi:ft=sh
