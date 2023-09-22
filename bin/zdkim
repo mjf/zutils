@@ -50,7 +50,7 @@ case "$1" in
 		# encoded public key, without an ASN.1 structure.
 
 		quiet openssl asn1parse -inform DER -offset 12 -noout -out - |
-		quiet openssl base64
+		quiet openssl base64 -A
 		;;
 	rsa)
 		# With RSA, the p value of the DKIM DNS record is expected
@@ -58,9 +58,9 @@ case "$1" in
 		# This is needed because RSA keys can have properties such
 		# as the key size and the exponent.
 
-		quiet openssl base64
+		quiet openssl base64 -A
 esac |
 
-zfold 64
+zfold
 
 # vi:ft=sh
