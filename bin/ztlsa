@@ -10,6 +10,8 @@
 
 # shellcheck disable=SC2034
 # shellcheck disable=SC2142
+# shellcheck disable=SC2292
+# shellcheck disable=SC2312
 # shellcheck disable=SC3011
 # shellcheck disable=SC3030
 # shellcheck disable=SC3037
@@ -29,19 +31,19 @@ if [ $# -ne 5 ]; then
 fi
 
 case "$1" in
-	0 | pkix-ta)
+	'0' | 'pkix-ta')
 		usage=0
 		;;
-	1 | pkix-ee)
+	'1' | 'pkix-ee')
 		usage=1
 		;;
-	2 | dane-ta)
+	'2' | 'dane-ta')
 		usage=2
 		;;
-	3 | dane-ee)
+	'3' | 'dane-ee')
 		usage=3
 		;;
-	\? | help)
+	'?' | 'help')
 		cat <<- EOT
 		0 | pkix-ta
 		1 | pkix-ee
@@ -56,13 +58,13 @@ case "$1" in
 esac
 
 case "$2" in
-	0 | full-certificate | full-cert | certificate | cert | full)
+	'0' | 'full-certificate' | 'full-cert' | 'certificate' | 'cert' | 'full')
 		selector=0
 		;;
-	1 | subject-public-key | spki)
+	'1' | 'subject-public-key' | 'spki')
 		selector=1
 		;;
-	\? | help)
+	'?' | 'help')
 		cat <<- EOT
 		0 | full-certificate | full-cert | certificate | cert | full
 		1 | subject-public-key | spki
@@ -75,16 +77,16 @@ case "$2" in
 esac
 
 case "$3" in
-	0 | exact-match | exact | match)
+	'0' | 'exact-match' | 'exact' | 'match')
 		matching=0
 		;;
-	1 | sha-256-digest | sha256-digest | sha-256 | sha256)
+	'1' | 'sha-256-digest' | 'sha256-digest' | 'sha-256' | 'sha256')
 		matching=1
 		;;
-	2 | sha-512-digest | sha512-digest | sha-512 | sha512)
+	'2' | 'sha-512-digest' | 'sha512-digest' | 'sha-512' | 'sha512')
 		matching=2
 		;;
-	\? | help)
+	'?' | 'help')
 		cat <<- EOT
 		0 | exact-match | exact | match
 		1 | sha-256-digest | sha256-digest | sha-256 | sha256
@@ -103,8 +105,12 @@ if ! { [ -f "$4" ] && [ -r "$4" ]; } then
 fi
 
 service=$(
-	quiet getent services "$(tr '[:upper:]' '[:lower:]' <<< "$5" || true)" |
-	sed 's/^[^ \t]\+[ \t]\+//;s/^/_/;s|/|._|'
+	quiet getent services "$(tr '[:upper:]' '[:lower:]' <<< "$5")" |
+	sed '{
+		s/^[^ \t]\+[ \t]\+//
+		s/^/_/
+		s|/|._|
+	}'
 )
 
 echo -n -e "${service:-$5} IN TLSA ${usage} ${selector} ${matching} "
@@ -112,10 +118,10 @@ echo -n -e "${service:-$5} IN TLSA ${usage} ${selector} ${matching} "
 quiet openssl x509 -in "$4" |
 
 case "${selector}" in
-	0)
+	'0')
 		quiet openssl x509 -outform DER
 		;;
-	1)
+	'1')
 		quiet openssl x509 -noout -pubkey |
 		quiet openssl rsa -pubin -outform DER
 		;;
@@ -123,13 +129,13 @@ case "${selector}" in
 esac |
 
 case "${matching}" in
-	0)
+	'0')
 		hexdump -ve '/1 "%02x"'
 		;;
-	1)
+	'1')
 		quiet openssl sha256 -r |cut -d ' ' -f 1
 		;;
-	2)
+	'2')
 		quiet openssl sha512 -r |cut -d ' ' -f 1
 		;;
 	*)

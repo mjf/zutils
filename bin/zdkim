@@ -8,6 +8,9 @@
 # Warning: Only the most basic checking is performed.
 
 # shellcheck disable=SC2034
+# shellcheck disable=SC2292
+# shellcheck disable=SC2312
+# shellcheck disable=SC3030
 # shellcheck disable=SC2142
 # shellcheck disable=SC3011
 # shellcheck disable=SC3037
@@ -15,7 +18,7 @@
 PROGRAM="${0##*/}"
 VERSION='0.2.1'
 RELEASE=''
-AUTHORS='2023 Matouš Jan Fialka, <https://mjf.cz/>'
+AUTHORS=('2023 Matouš Jan Fialka, <https://mjf.cz/>')
 LICENSE='MIT'
 
 alias error='1>&2 echo ${0##*/}:'
@@ -27,9 +30,9 @@ if [ $# -ne 3 ]; then
 fi
 
 case "$1" in
-	'rsa'|'ed25519')
+	'rsa' | 'ed25519')
 		;;
-	'?'|'help')
+	'?' | 'help')
 		echo 'ed25519'
 		echo 'rsa'
 		exit 0

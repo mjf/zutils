@@ -5,6 +5,7 @@
 # Released under the terms of The MIT License
 
 # shellcheck disable=SC2034
+# shellcheck disable=SC2292
 # shellcheck disable=SC3030
 # shellcheck disable=SC3057
 

@@ -5,6 +5,8 @@
 # Released under the terms of The MIT License
 
 # shellcheck disable=SC2034
+# shellcheck disable=SC2292
+# shellcheck disable=SC2312
 # shellcheck disable=SC3009
 # shellcheck disable=SC3030
 # shellcheck disable=SC3037
@@ -23,13 +25,15 @@ REFORMAT=0
 REFORMAT_SOA=0
 UNIQUE=0
 FIELDS=(0 0 0 0)
+
 for FIELD in {0..99}; do
 	VALUE_FIELDS[FIELD]=0
 done
+
 unset FIELD
 while [ $# -gt 0 ]; do
 	case "$1" in
-	-h|-help)
+	'-h' | '-help')
 		sed '/^TODO/d' <<- EOT
 		Usage: ${PROGRAM} { [-hV] | [-CDOSTu] [+<rr-opt> ...] }
 
@@ -69,7 +73,7 @@ while [ $# -gt 0 ]; do
 		EOT
 		exit 0
 		;;
-	-C|-complement)
+	'-C' | '-complement')
 		for FIELD in {0..3}; do
 			if [ "${FIELDS[FIELD]}" -eq 1 ]; then
 				FIELDS[FIELD]=0
@@ -77,6 +81,7 @@ while [ $# -gt 0 ]; do
 				FIELDS[FIELD]=1
 			fi
 		done
+
 		for FIELD in {0..99}; do
 			if [ "${VALUE_FIELDS[FIELD]}" -eq 1 ]; then
 				VALUE_FIELDS[FIELD]=0
@@ -86,19 +91,19 @@ while [ $# -gt 0 ]; do
 		done
 		unset FIELD
 		;;
-	-D|-with-dnssec)
+	'-D' | '-with-dnssec')
 		WITH_DNSSEC=1
 		;;
-	-S|-reformat-soa)
+	'-S' | '-reformat-soa')
 		REFORMAT_SOA=1
 		;;
-	-T|-reformat-ttl)
+	'-T' | '-reformat-ttl')
 		REFORMAT=1
 		;;
-	-u|-uniq|-unique)
+	'-u' | '-uniq' | '-unique')
 		UNIQUE=1
 		;;
-	-V|-version)
+	'-V' | '-version')
 		cat <<- EOT
 		${PROGRAM} (Zone Fields), version ${VERSION}.
 		$(for AUTHOR in "${AUTHORS[@]}"; do
@@ -111,7 +116,7 @@ while [ $# -gt 0 ]; do
 
 		exit 0
 		;;
-	+a|+al|+all)
+	'+a' | '+al' | '+all')
 		FIELDS=(1 1 1 1)
 
 		for FIELD in {0..99}; do
@@ -119,56 +124,58 @@ while [ $# -gt 0 ]; do
 		done
 		unset FIELD
 		;;
-	+noa|+noal|+noall)
+	'+noa' | '+noal' | '+noall')
 		FIELDS=(0 0 0 0)
+
 		for FIELD in {0..99}; do
 			VALUE_FIELDS[FIELD]=0
 		done
 		unset FIELD
 		;;
-	+n|+na|+nam|+name)
+	'+n' | '+na' | '+nam' | '+name')
 		FIELDS[0]=1
 		;;
-	+non|+nona|+nonam|+noname)
+	'+non' | '+nona' | '+nonam' | '+noname')
 		FIELDS[0]=0
 		;;
-	+tt|+tl|+ttl)
+	'+tt' | '+tl' | '+ttl')
 		FIELDS[1]=1
 		;;
-	+nott|+notl|+nottl)
+	'+nott' | '+notl' | '+nottl')
 		FIELDS[1]=0
 		;;
-	+c|+cl|+cla|+clas|+class)
+	'+c' | '+cl' | '+cla' | '+clas' | '+class')
 		FIELDS[2]=1
 		;;
-	+noc|+nocl|+nocla|+noclas|+noclass)
+	'+noc' | '+nocl' | '+nocla' | '+noclas' | '+noclass')
 		FIELDS[2]=0
 		;;
-	+t|+ty|+typ|+type)
+	'+t' | '+ty' | '+typ' | '+type')
 		FIELDS[3]=1
 		;;
-	+not|+noty|+notyp|+notype)
+	'+not' | '+noty' | '+notyp' | '+notype')
 		FIELDS[3]=0
 		;;
-	+v|+va|+val|+valu|+value)
+	'+v' | '+va' | '+val' | '+valu' | '+value')
 		for FIELD in {0..99}; do
 			VALUE_FIELDS[FIELD]=1
 		done
 		unset FIELD
 		;;
-	+nov|+nova|+noval|+novalu|+novalue)
+	'+nov' | '+nova' | '+noval' | '+novalu' | '+novalue')
 		for FIELD in {0..99}; do
 			VALUE_FIELDS[FIELD]=0
 		done
 		unset FIELD
 		;;
-	+v[0-9]*|+va[0-9]*|+val[0-9]*|+valu[0-9]*|+value[0-9]*)
+	'+v'[0-9]* | '+va'[0-9]* | '+val'[0-9]* | '+valu'[0-9]* | '+value'[0-9]*)
 		FIELD="$1"
 		FIELD="${FIELD#+value}"
 		FIELD="${FIELD#+valu}"
 		FIELD="${FIELD#+val}"
 		FIELD="${FIELD#+va}"
 		FIELD="${FIELD#+v}"
+
 		case "${FIELD}" in
 		[1-9]|[1-9][0-9]|100)
 			VALUE_FIELDS[FIELD-1]=1
@@ -181,13 +188,14 @@ while [ $# -gt 0 ]; do
 		esac
 		unset FIELD
 		;;
-	+nov[0-9]*|+nova[0-9]*|+noval[0-9]*|+novalu[0-9]*|+novalue[0-9]*)
+	'+nov'[0-9]* | '+nova'[0-9]* | '+noval'[0-9]* | '+novalu'[0-9]* | '+novalue'[0-9]*)
 		FIELD="$1"
 		FIELD="${FIELD#+novalue}"
 		FIELD="${FIELD#+novalu}"
 		FIELD="${FIELD#+noval}"
 		FIELD="${FIELD#+nova}"
 		FIELD="${FIELD#+nov}"
+
 		case "${FIELD}" in
 		[1-9]|[1-9][0-9]|100)
 			VALUE_FIELDS[FIELD-1]=0
@@ -200,7 +208,7 @@ while [ $# -gt 0 ]; do
 		esac
 		unset FIELD
 		;;
-	+q|+qu|+qui|+quic|+quick)
+	'+q' | '+qu' | '+qui' | '+quic' | '+quick')
 		FIELDS[1]=1
 		FIELDS[3]=1
 
@@ -212,8 +220,8 @@ while [ $# -gt 0 ]; do
 	*)
 		echo "Unknown option $1." 1>&2
 		exit 1
-		;;
 	esac
+
 	if [ $# -gt 0 ]; then
 		shift
 	else
@@ -225,29 +233,31 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 	if [ -z "${VALUES[0]}" ]; then
 		continue
 	fi
+
 	if [ "${WITH_DNSSEC}" -eq 0 ]; then
 		case "${VALUES[3]}" in
-		DNSKEY|RRSIG|NSEC|DS)
+		'DNSKEY' | 'RRSIG' | 'NSEC' | 'DS')
 			continue
 			;;
 		*)
 		esac
 	fi
+
 	if [ "${REFORMAT_SOA}" -eq 1 ]; then
 		case "${VALUES[3]}" in
-		SOA)
+		'SOA')
 			VALUES[4]=$(
 				FIELD=0
 				for VALUE in ${VALUES[4]}; do
 					case "${FIELD}" in
-					0)
+					'0')
 						;;
-					1)
+					'1')
 						VALUE="${VALUE/./@}"
 						VALUE="${VALUE%.}"
 						echo -n ' '
 						;;
-					2)
+					'2')
 						if [ "${#VALUE}" -eq 10 ]; then
 							VALUE="${VALUE:0:4}-${VALUE:4:2}-${VALUE:6:2}\#$(printf '%d' "${VALUE:8:2}")"
 						fi
@@ -256,8 +266,8 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 					*)
 						VALUE="$(zht "${VALUE}" || true)"
 						echo -n ' '
-						;;
 					esac
+
 					echo -n "${VALUE}"
 					FIELD="$((FIELD+1))"
 				done
@@ -266,6 +276,7 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 		*)
 		esac
 	fi
+
 	OUTPUT=$(
 		case "${VALUES[0]}" in
 		';'*)
@@ -273,6 +284,7 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 			;;
 		*)
 		esac
+
 		for FIELD in {0..3}; do
 			if [ "${FIELDS[FIELD]}" -eq 1 ]; then
 				if [ "${FIELD}" -eq 1 ] && [ "${REFORMAT}" -eq 1 ]; then
@@ -283,20 +295,22 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 				echo -n ' '
 			fi
 		done
+
 		FIELD=0
 		for VALUE_FIELD in ${VALUES[4]}; do
 			if [ "${VALUE_FIELDS[FIELD]}" -eq 1 ]; then
 				echo -n "${VALUE_FIELD}"
 			fi
-
 			FIELD=$((FIELD+1))
 		done
 		unset FIELD
 	)
+
 	if [ ${#OUTPUT} -gt 0 ]; then
 		echo "${OUTPUT}"
 	fi
-done|
+done |
+
 if [ "${UNIQUE}" -eq 1 ]; then
 	sort -u
 else

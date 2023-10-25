@@ -5,13 +5,14 @@
 # Released under the terms of The MIT License
 
 # shellcheck disable=SC2034
+# shellcheck disable=SC2312
 # shellcheck disable=SC3030
 # shellcheck disable=SC3054
 
 PROGRAM="${0##*/}"
 VERSION='0.2.1'
 RELEASE=''
-AUTHORS='2014, 2023 Matouš Jan Fialka, <https://mjf.cz/>'
+AUTHORS=('2014, 2023 Matouš Jan Fialka, <https://mjf.cz/>')
 LICENSE='MIT'
 
 if ! DIG=$(command -v dig); then
@@ -30,10 +31,10 @@ DIG_OPTS=(
 )
 OPTS=("${@:-.}")
 
-${DIG} 2>/dev/null "${DIG_OPTS[@]}" "${OPTS[@]}" +nomultiline|
+${DIG} 2>/dev/null "${DIG_OPTS[@]}" "${OPTS[@]}" +nomultiline |
 while read -r NAME REST; do
 	case "${NAME}" in
-	"${OPTS[$((${#OPTS[@]}-1))]}"|"${OPTS[$((${#OPTS[@]}-1))]}."|*.in-addr.arpa.)
+	"${OPTS[$((${#OPTS[@]}-1))]}" | "${OPTS[$((${#OPTS[@]}-1))]}." | *.in-addr.arpa.)
 		echo "${NAME} ${REST}"
 		;;
 	*)

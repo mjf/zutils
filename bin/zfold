@@ -6,6 +6,8 @@
 
 # shellcheck disable=SC2034
 # shellcheck disable=SC2142
+# shellcheck disable=SC2292
+# shellcheck disable=SC2312
 # shellcheck disable=SC3030
 
 PROGRAM="${0##*/}"
@@ -23,6 +25,17 @@ if [ $# -gt 2 ]; then
 fi
 
 quiet fold -s -w "${1:-56}" "${2:--}" |
-sed '1{s/^/(\n  "/;s/$/"/};2,${s/^/  "/;s/$/"/};$s/$/\n  )\n/'
+
+sed '{
+	1 {
+		s/^/(\n  "/
+		s/$/"/
+	}
+	2,$ {
+		s/^/  "/
+		s/$/"/
+	}
+	$ s/$/\n  )\n/
+}'
 
 # vi:ft=sh
