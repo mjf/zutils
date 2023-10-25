@@ -19,19 +19,20 @@ if [ "$1" -eq 0 ]
 then
 	printf -- '0\n'
 else
-	for fld in $for
+	for fld in ${for}
 	do
-		case "$fld" in
+		case "${fld}" in
 			"${for:8:1}") res=$(($1%60)) ;;
 			"${for:6:1}") res=$(($1/60%60)) ;;
 			"${for:4:1}") res=$(($1/3600%24)) ;;
 			"${for:2:1}") res=$(($1/86400%7)) ;;
 			"${for:0:1}") res=$(($1/604800)) ;;
+			*)
 		esac
 
-		if [ $res -ne 0 ]
+		if [ "${res}" -ne 0 ]
 		then
-			printf -- '%d%c' $res "$fld"
+			printf -- '%d%c' "${res}" "${fld}"
 		fi
 
 		res=0

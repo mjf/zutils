@@ -95,24 +95,26 @@ if ! { [ -f "$4" ] && [ -r "$4" ]; } then
 fi
 
 service=$(
-	quiet getent services "$(tr '[:upper:]' '[:lower:]' <<< "$5")" |
+	quiet getent services "$(tr '[:upper:]' '[:lower:]' <<< "$5" || true)" |
 	sed 's/^[^ \t]\+[ \t]\+//;s/^/_/;s|/|._|'
 )
 
-echo -n -e "${service:-$5} IN TLSA $usage $selector $matching "
+echo -n -e "${service:-$5} IN TLSA ${usage} ${selector} ${matching} "
 
 quiet openssl x509 -in "$4" |
 
-case $selector in
+case "${selector}" in
 	0)
 		quiet openssl x509 -outform DER
 		;;
 	1)
 		quiet openssl x509 -noout -pubkey |
 		quiet openssl rsa -pubin -outform DER
+		;;
+	*)
 esac |
 
-case $matching in
+case "${matching}" in
 	0)
 		hexdump -ve '/1 "%02x"'
 		;;
@@ -121,6 +123,8 @@ case $matching in
 		;;
 	2)
 		quiet openssl sha512 -r |cut -d ' ' -f 1
+		;;
+	*)
 esac |
 
 tr '[:lower:]' '[:upper:]'

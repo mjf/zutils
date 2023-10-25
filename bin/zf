@@ -101,7 +101,7 @@ while [ $# -gt 0 ]; do
 		cat <<- EOT
 		${PROGRAM} (Zone Fields), version ${VERSION}.
 		$(for AUTHOR in "${AUTHORS[@]}"; do
-			cat <<- EOSUBT
+			cat <<- EOSUBT || true
 			Copyright (C) ${AUTHOR}
 			EOSUBT
 		done)
@@ -229,6 +229,7 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 		DNSKEY|RRSIG|NSEC|DS)
 			continue
 			;;
+		*)
 		esac
 	fi
 	if [ "${REFORMAT_SOA}" -eq 1 ]; then
@@ -252,7 +253,7 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 						echo -n ' '
 						;;
 					*)
-						VALUE="$(zht "${VALUE}")"
+						VALUE="$(zht "${VALUE}" || true)"
 						echo -n ' '
 						;;
 					esac
@@ -261,18 +262,20 @@ while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
 				done
 			)
 			;;
+		*)
 		esac
 	fi
 	OUTPUT=$(
 		case "${VALUES[0]}" in
-		\;*)
+		';'*)
 			exit 0
 			;;
+		*)
 		esac
 		for FIELD in {0..3}; do
 			if [ "${FIELDS[FIELD]}" -eq 1 ]; then
 				if [ "${FIELD}" -eq 1 ] && [ "${REFORMAT}" -eq 1 ]; then
-					echo -n "$(zht "${VALUES[FIELD]}")"
+					echo -n "$(zht "${VALUES[FIELD]}" || true)"
 				else
 					echo -n "${VALUES[FIELD]}"
 				fi

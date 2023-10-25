@@ -20,9 +20,9 @@ if [ $# -ne 3 ]; then
 fi
 
 case "$1" in
-	rsa | ed25519)
+	'rsa'|'ed25519')
 		;;
-	\? | help)
+	'?'|'help')
 		echo 'ed25519'
 		echo 'rsa'
 		exit 0
@@ -37,7 +37,7 @@ if ! grep -q -E '^[a-z0-9][a-z0-9_-]+$' <<< "$2"; then
 	exit 129
 fi
 
-if ! { [ -f "$3" ] && [ -r "$3" ]; }; then
+if ! { [ -f "$3" ] && [ -r "$3" ]; } then
 	error 'private key file could not be read'
 	exit 130
 fi
@@ -47,7 +47,7 @@ echo -n -e "$2._domainkey IN TXT \"v=DKIM1; k=$1; p=\" "
 quiet openssl pkey -in "$3" -pubout -outform DER |
 
 case "$1" in
-	ed25519)
+	'ed25519')
 		# With Ed25519 there are no settings, so there is no need
 		# for an ASN.1 structure.  When using Ed25519 the p value
 		# in the DKIM DNS record must only contain the BASE64
@@ -56,13 +56,15 @@ case "$1" in
 		quiet openssl asn1parse -inform DER -offset 12 -noout -out - |
 		quiet openssl base64 -A
 		;;
-	rsa)
+	'rsa')
 		# With RSA, the p value of the DKIM DNS record is expected
 		# to contain an ASN.1 structure with the RSA public key.
 		# This is needed because RSA keys can have properties such
 		# as the key size and the exponent.
 
 		quiet openssl base64 -A
+		;;
+	*)
 esac |
 
 zfold
