@@ -8,6 +8,10 @@
 # Note: If service is not found using getent(1) then it is passed as given.
 # Warning: Only the most basic checking is performed.
 
+# shellcheck disable=SC2142
+# shellcheck disable=SC3011
+# shellcheck disable=SC3037
+
 alias error='1>&2 echo ${0##*/}:'
 alias quiet='2>/dev/null'
 
@@ -85,13 +89,13 @@ case "$3" in
 		exit 130
 esac
 
-if ! [ -f "$4" -a -r "$4" ]; then
+if ! { [ -f "$4" ] && [ -r "$4" ]; } then
 	error 'certificate file could not be read'
 	exit 131
 fi
 
 service=$(
-	quiet getent services "$(tr A-Z a-z <<< "$5")" |
+	quiet getent services "$(tr '[:upper:]' '[:lower:]' <<< "$5")" |
 	sed 's/^[^ \t]\+[ \t]\+//;s/^/_/;s|/|._|'
 )
 
@@ -119,6 +123,6 @@ case $matching in
 		quiet openssl sha512 -r |cut -d ' ' -f 1
 esac |
 
-tr a-z A-Z
+tr '[:lower:]' '[:upper:]'
 
 # vi:ft=sh
