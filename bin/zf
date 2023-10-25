@@ -13,7 +13,8 @@
 # shellcheck disable=SC3060
 
 PROGRAM="${0##*/}"
-VERSION='1.8'
+VERSION='0.2.1'
+RELEASE=''
 AUTHORS=('2014, 2022-2023 Matouš Jan Fialka, <https://mjf.cz/>')
 LICENSE='MIT'
 

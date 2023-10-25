@@ -6,11 +6,12 @@
 
 # shellcheck disable=SC2034
 # shellcheck disable=SC2142
+# shellcheck disable=SC3030
 
 PROGRAM="${0##*/}"
-VERSION='0.0.1'
-RELEASE='2023061401'
-AUTHORS='2023 Matous Jan Fialka, <https://mjf.cz/>'
+VERSION='0.2.1'
+RELEASE=''
+AUTHORS=('2023 Matous Jan Fialka, <https://mjf.cz/>')
 LICENSE='MIT'
 
 alias error='1>&2 echo ${0##*/}:'

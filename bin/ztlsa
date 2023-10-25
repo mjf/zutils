@@ -8,9 +8,17 @@
 # Note: If service is not found using getent(1) then it is passed as given.
 # Warning: Only the most basic checking is performed.
 
+# shellcheck disable=SC2034
 # shellcheck disable=SC2142
 # shellcheck disable=SC3011
+# shellcheck disable=SC3030
 # shellcheck disable=SC3037
+
+PROGRAM="${0##*/}"
+VERSION='0.2.1'
+RELEASE=''
+AUTHORS=('2023 Matouš Jan Fialka, <https://mjf.cz/>')
+LICENSE='MIT'
 
 alias error='1>&2 echo ${0##*/}:'
 alias quiet='2>/dev/null'
