@@ -4,6 +4,14 @@
 # Copyright (C) 2014, 2022-2023 Matous J. Fialka, <http://mjf.cz/>
 # Released under the terms of The MIT License
 
+# shellcheck disable=SC2034
+# shellcheck disable=SC3009
+# shellcheck disable=SC3030
+# shellcheck disable=SC3037
+# shellcheck disable=SC3054
+# shellcheck disable=SC3057
+# shellcheck disable=SC3060
+
 PROGRAM="${0##*/}"
 VERSION='1.8'
 AUTHORS=('2014, 2022-2023 Matouš Jan Fialka, <https://mjf.cz/>')
@@ -15,14 +23,14 @@ REFORMAT_SOA=0
 UNIQUE=0
 FIELDS=(0 0 0 0)
 for FIELD in {0..99}; do
-	VALUE_FIELDS[$FIELD]=0
+	VALUE_FIELDS[FIELD]=0
 done
 unset FIELD
 while [ $# -gt 0 ]; do
-	case $1 in
+	case "$1" in
 	-h|-help)
-		sed /^TODO/d <<- EOT
-		Usage: $PROGRAM { [-hV] | [-CDOSTu] [+<rr-opt> ...] }
+		sed '/^TODO/d' <<- EOT
+		Usage: ${PROGRAM} { [-hV] | [-CDOSTu] [+<rr-opt> ...] }
 
 		Where:
 		   -C, -complement	Print fields' complement (0=>1, 1=>0)
@@ -53,26 +61,26 @@ while [ $# -gt 0 ]; do
 		   +q[uick]		Alias for +ttl +type +value
 
 		Examples:
-		   z soa example.com |$PROGRAM -C +name +ttl
-		   z soa example.com |$PROGRAM -C +noname +notype
-		   z any example.com |$PROGRAM +name +type +value1 +value2
-		   z mx  example.com |$PROGRAM +quick +novalue1 -S
+		   z soa example.com |${PROGRAM} -C +name +ttl
+		   z soa example.com |${PROGRAM} -C +noname +notype
+		   z any example.com |${PROGRAM} +name +type +value1 +value2
+		   z mx  example.com |${PROGRAM} +quick +novalue1 -S
 		EOT
 		exit 0
 		;;
 	-C|-complement)
 		for FIELD in {0..3}; do
-			if [ ${FIELDS[$FIELD]} -eq 1 ]; then
-				FIELDS[$FIELD]=0
+			if [ "${FIELDS[FIELD]}" -eq 1 ]; then
+				FIELDS[FIELD]=0
 			else
-				FIELDS[$FIELD]=1
+				FIELDS[FIELD]=1
 			fi
 		done
 		for FIELD in {0..99}; do
-			if [ ${VALUE_FIELDS[$FIELD]} -eq 1 ]; then
-				VALUE_FIELDS[$FIELD]=0
+			if [ "${VALUE_FIELDS[FIELD]}" -eq 1 ]; then
+				VALUE_FIELDS[FIELD]=0
 			else
-				VALUE_FIELDS[$FIELD]=1
+				VALUE_FIELDS[FIELD]=1
 			fi
 		done
 		unset FIELD
@@ -91,10 +99,10 @@ while [ $# -gt 0 ]; do
 		;;
 	-V|-version)
 		cat <<- EOT
-		$PROGRAM (Zone Fields), version $VERSION.
+		${PROGRAM} (Zone Fields), version ${VERSION}.
 		$(for AUTHOR in "${AUTHORS[@]}"; do
 			cat <<- EOSUBT
-			Copyright (C) $AUTHOR
+			Copyright (C) ${AUTHOR}
 			EOSUBT
 		done)
 		Released under the terms of The MIT License
@@ -106,14 +114,14 @@ while [ $# -gt 0 ]; do
 		FIELDS=(1 1 1 1)
 
 		for FIELD in {0..99}; do
-			VALUE_FIELDS[$FIELD]=1
+			VALUE_FIELDS[FIELD]=1
 		done
 		unset FIELD
 		;;
 	+noa|+noal|+noall)
 		FIELDS=(0 0 0 0)
 		for FIELD in {0..99}; do
-			VALUE_FIELDS[$FIELD]=0
+			VALUE_FIELDS[FIELD]=0
 		done
 		unset FIELD
 		;;
@@ -143,49 +151,49 @@ while [ $# -gt 0 ]; do
 		;;
 	+v|+va|+val|+valu|+value)
 		for FIELD in {0..99}; do
-			VALUE_FIELDS[$FIELD]=1
+			VALUE_FIELDS[FIELD]=1
 		done
 		unset FIELD
 		;;
 	+nov|+nova|+noval|+novalu|+novalue)
 		for FIELD in {0..99}; do
-			VALUE_FIELDS[$FIELD]=0
+			VALUE_FIELDS[FIELD]=0
 		done
 		unset FIELD
 		;;
 	+v[0-9]*|+va[0-9]*|+val[0-9]*|+valu[0-9]*|+value[0-9]*)
-		FIELD=$1
-		FIELD=${FIELD#+value}
-		FIELD=${FIELD#+valu}
-		FIELD=${FIELD#+val}
-		FIELD=${FIELD#+va}
-		FIELD=${FIELD#+v}
-		case $FIELD in
+		FIELD="$1"
+		FIELD="${FIELD#+value}"
+		FIELD="${FIELD#+valu}"
+		FIELD="${FIELD#+val}"
+		FIELD="${FIELD#+va}"
+		FIELD="${FIELD#+v}"
+		case "${FIELD}" in
 		[1-9]|[1-9][0-9]|100)
-			VALUE_FIELDS[$((FIELD-1))]=1
+			VALUE_FIELDS[FIELD-1]=1
 			;;
 
 		*)
-			echo Invalid value field option $1. 1>&2
+			echo "Invalid value field option $1." 1>&2
 			exit 1
 			;;
 		esac
 		unset FIELD
 		;;
 	+nov[0-9]*|+nova[0-9]*|+noval[0-9]*|+novalu[0-9]*|+novalue[0-9]*)
-		FIELD=$1
-		FIELD=${FIELD#+novalue}
-		FIELD=${FIELD#+novalu}
-		FIELD=${FIELD#+noval}
-		FIELD=${FIELD#+nova}
-		FIELD=${FIELD#+nov}
-		case $FIELD in
+		FIELD="$1"
+		FIELD="${FIELD#+novalue}"
+		FIELD="${FIELD#+novalu}"
+		FIELD="${FIELD#+noval}"
+		FIELD="${FIELD#+nova}"
+		FIELD="${FIELD#+nov}"
+		case "${FIELD}" in
 		[1-9]|[1-9][0-9]|100)
-			VALUE_FIELDS[$((FIELD-1))]=0
+			VALUE_FIELDS[FIELD-1]=0
 			;;
 
 		*)
-			echo Invalid value field option $1. 1>&2
+			echo "Invalid value field option $1." 1>&2
 			exit 1
 			;;
 		esac
@@ -196,12 +204,12 @@ while [ $# -gt 0 ]; do
 		FIELDS[3]=1
 
 		for FIELD in {0..99}; do
-			VALUE_FIELDS[$FIELD]=1
+			VALUE_FIELDS[FIELD]=1
 		done
 		unset FIELD
 		;;
 	*)
-		echo Unknown option $1. 1>&2
+		echo "Unknown option $1." 1>&2
 		exit 1
 		;;
 	esac
@@ -212,69 +220,69 @@ while [ $# -gt 0 ]; do
 	fi
 done
 
-while read VALUES[0] VALUES[1] VALUES[2] VALUES[3] VALUES[4]; do
-	if [ -z ${VALUES[0]} ]; then
+while read -r VALUES['0'] VALUES['1'] VALUES['2'] VALUES['3'] VALUES['4']; do
+	if [ -z "${VALUES[0]}" ]; then
 		continue
 	fi
-	if [ $WITH_DNSSEC -eq 0 ]; then
-		case ${VALUES[3]} in
+	if [ "${WITH_DNSSEC}" -eq 0 ]; then
+		case "${VALUES[3]}" in
 		DNSKEY|RRSIG|NSEC|DS)
 			continue
 			;;
 		esac
 	fi
-	if [ $REFORMAT_SOA -eq 1 ]; then
-		case ${VALUES[3]} in
+	if [ "${REFORMAT_SOA}" -eq 1 ]; then
+		case "${VALUES[3]}" in
 		SOA)
 			VALUES[4]=$(
 				FIELD=0
 				for VALUE in ${VALUES[4]}; do
-					case $FIELD in
+					case "${FIELD}" in
 					0)
 						;;
 					1)
-						VALUE=${VALUE/./@}
-						VALUE=${VALUE%.}
+						VALUE="${VALUE/./@}"
+						VALUE="${VALUE%.}"
 						echo -n ' '
 						;;
 					2)
-						if [ ${#VALUE} -eq 10 ]; then
-							VALUE=${VALUE:0:4}-${VALUE:4:2}-${VALUE:6:2}\#$(printf %d ${VALUE:8:2})
+						if [ "${#VALUE}" -eq 10 ]; then
+							VALUE="${VALUE:0:4}-${VALUE:4:2}-${VALUE:6:2}\#$(printf '%d' "${VALUE:8:2}")"
 						fi
 						echo -n ' '
 						;;
 					*)
-						VALUE=$(zht $VALUE)
+						VALUE="$(zht "${VALUE}")"
 						echo -n ' '
 						;;
 					esac
-					echo -n $VALUE
-					FIELD=$((FIELD+1))
+					echo -n "${VALUE}"
+					FIELD="$((FIELD+1))"
 				done
 			)
 			;;
 		esac
 	fi
 	OUTPUT=$(
-		case ${VALUES[0]} in
+		case "${VALUES[0]}" in
 		\;*)
 			exit 0
 			;;
 		esac
 		for FIELD in {0..3}; do
-			if [ ${FIELDS[$FIELD]} -eq 1 ]; then
-				if [ $FIELD -eq 1 -a $REFORMAT -eq 1 ]; then
-					echo -n $(zht ${VALUES[$FIELD]})
+			if [ "${FIELDS[FIELD]}" -eq 1 ]; then
+				if [ "${FIELD}" -eq 1 ] && [ "${REFORMAT}" -eq 1 ]; then
+					echo -n "$(zht "${VALUES[FIELD]}")"
 				else
-					echo -n ${VALUES[$FIELD]}
+					echo -n "${VALUES[FIELD]}"
 				fi
 				echo -n ' '
 			fi
 		done
 		FIELD=0
 		for VALUE_FIELD in ${VALUES[4]}; do
-			if [ ${VALUE_FIELDS[$FIELD]} -eq 1 ]; then
-				echo -n $VALUE_FIELD ''
+			if [ "${VALUE_FIELDS[FIELD]}" -eq 1 ]; then
+				echo -n "${VALUE_FIELD}"
 			fi
 
 			FIELD=$((FIELD+1))
@@ -282,10 +290,10 @@ while read VALUES[0] VALUES[1] VALUES[2] VALUES[3] VALUES[4]; do
 		unset FIELD
 	)
 	if [ ${#OUTPUT} -gt 0 ]; then
-		echo $OUTPUT
+		echo "${OUTPUT}"
 	fi
 done|
-if [ $UNIQUE -eq 1 ]; then
+if [ "${UNIQUE}" -eq 1 ]; then
 	sort -u
 else
 	cat
